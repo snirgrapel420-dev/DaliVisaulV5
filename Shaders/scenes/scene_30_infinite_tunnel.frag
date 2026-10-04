@@ -88,12 +88,12 @@ void main()
     float t = 0.05, isRib = 0.0;
     float glowAcc = 0.0;
     bool hit = false;
-    for (int i = 0; i < 110; i++)
+    for (int i = 0; i < 150; i++)
     {
         vec3 p = ro + rd * t;
         float d = mapFull(p, isRib);
         glowAcc += exp(-d * 30.0) * 0.004;
-        if (d < 0.0015 * t) { hit = true; break; }
+        if (d < hitEps(t) * 1.5) { hit = true; break; }
         t += d * 0.75;
         if (t > 60.0) break;
     }
@@ -136,5 +136,6 @@ void main()
     col *= 1.0 - 0.1 * calm;
     col *= smoothstep(1.5, 0.45, length(uv * vec2(0.8, 1.0)));
     col *= uIntensity * 1.3 * mix(0.6, 1.0, uActivity);
+    col *= 1.6;                                   // exposure matched to the other scenes (consistency pass)
     fragColor = vec4(col, 1.0);
 }

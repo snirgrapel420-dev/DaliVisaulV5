@@ -30,9 +30,9 @@ float gVein;
 
 float map(vec3 p)
 {
-    float sc = 0.9 + 0.6 * uMacro.x;
+    float sc = 0.75 + 0.5 * uMacro.x;
     vec3 q = p * sc;
-    float thick = 0.55 + 0.25 * uSub + 0.15 * uBassSlow - 0.3 * uState.y;    // walls swell with the bass
+    float thick = 0.16 + 0.10 * uSub + 0.06 * uBassSlow + 0.08 * uState.y;   // membranes swell with the bass
     float g = gyroid(q);
     // mids blend in a second, rotated gyroid: the caverns morph
     float g2 = gyroid(q.zxy * 1.7 + vec3(0.0, uMidTime * 0.05, 0.0));
@@ -55,7 +55,7 @@ void main()
     // far from the walls (|g| < thickness)
     float z = uBassTime * (0.4 + 1.2 * uMacro.z) + uTime * 0.1;
     vec3 ro = vec3(1.5708 + 0.18 * sin(z * 0.3), 0.18 * cos(z * 0.23), z);
-    ro /= (0.9 + 0.6 * uMacro.x);
+    ro /= (0.75 + 0.5 * uMacro.x);
     vec3 fw = normalize(vec3(0.15 * sin(z * 0.2 + uMidTime * 0.05), 0.1 * cos(z * 0.17), 1.0));
     vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw));
     vec3 up = cross(fw, rt);
@@ -64,12 +64,12 @@ void main()
 
     float t = 0.02, glow = 0.0;
     bool hit = false;
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 140; i++)
     {
         vec3 p = ro + rd * t;
         float d = map(p);
         glow += exp(-abs(d) * 40.0) * 0.004;
-        if (abs(d) < 0.001 * t) { hit = true; break; }
+        if (abs(d) < hitEps(t)) { hit = true; break; }
         t += abs(d) * 0.8;
         if (t > 22.0) break;
     }
@@ -82,19 +82,24 @@ void main()
         vec2 e = vec2(0.002, 0.0);
         vec3 n = normalize(vec3(map(p + e.xyy) - map(p - e.xyy), map(p + e.yxy) - map(p - e.yxy), map(p + e.yyx) - map(p - e.yyx)));
         float head = clamp(dot(n, -rd), 0.0, 1.0);
-        float sss = pow(1.0 - head, 2.0);                                      // soft subsurface rim
+        // key light from up-ahead reveals the curvature; a wet specular sheen; thin walls glow through
+        vec3 kl = normalize(fw * 0.6 + up * 0.7 + rt * 0.3);
+        float key = clamp(dot(n, kl), 0.0, 1.0);
+        float spec = pow(clamp(dot(reflect(rd, n), kl), 0.0, 1.0), 30.0);
+        float sss = pow(1.0 - head, 3.0);
         float ao = clamp(map(p + n * 0.15) / 0.15, 0.0, 1.0);
-        vec3 flesh = mix(C1, C2 * 0.6, 0.3 + 0.3 * sss);
-        col = flesh * (0.06 + 0.5 * head * head) * (0.4 + 0.6 * ao);
-        col += mix(C1, C2, 0.6) * sss * 0.25 * (0.4 + uLowMid);
+        vec3 flesh = mix(C1, C2 * 0.5, 0.25 * sss);
+        col = flesh * (0.03 + 0.25 * head + 0.75 * key * key) * (0.25 + 0.75 * ao);
+        col += mix(C2, C3, 0.6) * spec * ao * (0.5 + 0.8 * uHighMid);
+        col += mix(C1, C2, 0.7) * sss * 0.35 * (0.3 + uLowMid + 0.5 * uSub);
         // bioluminescent veins; the kick sends a pulse outward from the camera
-        float veinLine = smoothstep(0.12 - 0.05 * uMacro.y, 0.0, vein);
+        float veinLine = smoothstep(0.16 - 0.06 * uMacro.y, 0.02, vein);
         float pulseR = (1.0 - uKick) * 12.0;
         float pulse = exp(-abs(t - pulseR) * 1.5) * uKick;
         float sparkle = pow(0.5 + 0.5 * sin(dot(p, vec3(13.0, 17.0, 11.0)) - uHighTime * 5.0), 20.0);
-        col += mix(C2, C3, 0.4) * veinLine * (0.1 + 0.9 * peak + 2.5 * pulse + 1.2 * sparkle * uHigh) * (1.0 - 0.6 * build);
-        float fog = 1.0 - exp(-t * 0.13);
-        col = mix(col, C0 * 0.5 + C1 * 0.12, fog);
+        col += mix(C2, C3, 0.4) * veinLine * (0.25 + 1.2 * peak + 3.0 * pulse + 1.4 * sparkle * uHigh) * (1.0 - 0.6 * build) * (0.5 + 0.5 * ao);
+        float fog = 1.0 - exp(-t * 0.10);
+        col = mix(col, C0 * 0.3 + C1 * 0.08, fog);
     }
     col += mix(C1, C2, 0.5) * glow * (0.3 + 0.8 * peak + 0.6 * uKick);
     col += C2 * build * 0.3 * exp(-length(uv) * 5.0);
@@ -102,5 +107,6 @@ void main()
     col *= 1.0 - 0.1 * calm;
     col *= smoothstep(1.5, 0.45, length(uv * vec2(0.8, 1.0)));
     col *= uIntensity * 1.6 * mix(0.6, 1.0, uActivity);
+    col *= 1.8;                                   // exposure matched to the other scenes (consistency pass)
     fragColor = vec4(col, 1.0);
 }

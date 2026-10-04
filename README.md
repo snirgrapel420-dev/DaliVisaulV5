@@ -1,4 +1,4 @@
-# DALI VISUAL 5 — by DALI AUDIO
+# DALI VISUAL 6 — by DALI AUDIO
 
 Audio-reactive generative visual instrument. **VST3 + Standalone**, one shared engine.
 C++17 · JUCE 8 · CMake · OpenGL 3.2 core / GLSL 150.
@@ -11,6 +11,12 @@ C++17 · JUCE 8 · CMake · OpenGL 3.2 core / GLSL 150.
   והצבע עובר בין "משפחות" צבע לבד לפי המצב המוזיקלי (CALM / BUILD / PEAK / CHAOS).
 * **סט סצנות תלת-ממדי חדש:** 01 Kali Cathedral · 02 Tidal Cathedral · 03 Infinite Tunnel (חדש, תלת-ממד אמיתי) ·
   04 Apollonian Dream (חדש) · 05 Gyroid Caverns (חדש) · 06 Image Reactor. כל הסצנות הישנות נמחקו.
+* **v5.1:** חלון התצוגה ומסך הלייב מראים בדיוק אותו דבר (ציר זמן משותף). איכות 4K: raymarching ברזולוציה אמיתית של הפיקסל,
+  Bloom מנורמל לרזולוציה, Sharpness, ורינדור 150%/200% (supersampling). סצנות חדשות: Mandelbulb Bloom, Fourth Dimension.
+* **v5.2:** 13 סצנות תלת-ממדיות + Image Reactor. חדשות: Mandelbox Temple, Crystal Sanctum, Menger Void, Quaternion Julia,
+  Fractal Ocean, Dimension Gate.
+* **v6 – הגרסה הראשונית המלאה:** 19 סצנות תלת-ממדיות + Image Reactor = 20. חדשות: Alien Megastructure, KIFS Reliquary,
+  Biomech Hive, Nebula Drift, Sierpinski Shrine, Torus Nexus. מעבר עקביות: חשיפה מותאמת לכל סצנה, כך שהמעברים בסט אחידים.
 * **Auto FX** (עמוד SCENE) – שכבת מצלמה ועדשה אוטומטית לכל סצנה: פאנץ' על הקיק, פיצול כרומטי על הסנר,
   טשטוש מהירות בשיאים, סחיפת צבע עם בהירות הסאונד.
 

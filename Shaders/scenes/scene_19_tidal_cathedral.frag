@@ -91,14 +91,14 @@ void main()
 
     float t = 0.0, shafts = 0.0;
     float hit = 0.0;
-    for (int i = 0; i < 90; i++)
+    for (int i = 0; i < 140; i++)
     {
         vec3 p = ro + rd * t;
         float d = map(p);
         // light shafts from the surface: volume sampled along the ray
         float sh = smoothstep(0.55, 0.95, vnoise(vec2(p.x * 0.6 + 0.3 * p.y, p.z * 0.25 - uMidTime * 0.05)));
         shafts += sh * exp(-t * 0.12) * 0.012 * max(0.0, 1.0 + p.y * 0.3);
-        if (d < 0.0015 * t) { hit = 1.0; break; }
+        if (d < hitEps(t) * 1.5) { hit = 1.0; break; }
         t += d * 0.8;
         if (t > 40.0) break;
     }

@@ -3,6 +3,7 @@
 uniform float uHue, uSaturation, uBrightness, uContrast;
 uniform float uDynamics;     // 0..1 amount of build / drop treatment
 uniform float uBloom;        // 0..1 bloom amount (uTex has mipmaps)
+uniform float uSharpen;      // 0..1 detail sharpening (crisp fractal detail at 4K / when upscaling)
 uniform float uAutoFX;       // 0..1 automatic camera / lens effects driven by the music (every scene)
 
 vec3 hueRotate(vec3 c, float h)
@@ -45,9 +46,13 @@ void main()
         c += vec3(texture(uTex, u + dir * ca).r, texture(uTex, u).g, texture(uTex, u - dir * ca).b);
     }
     c /= 6.0;
+    // sharpening: add back the detail above a slightly blurred copy (mip chain), limited to avoid halos
+    vec3 soft = textureLod(uTex, uv, 1.25).rgb;
+    c += clamp(c - soft, -0.15, 0.15) * uSharpen * 1.6;
     // bloom: wide, soft glow gathered from the mip chain (thresholded so darks stay deep)
-    vec3 b1 = textureLod(uTex, uv, 2.0).rgb, b2 = textureLod(uTex, uv, 3.5).rgb,
-         b3 = textureLod(uTex, uv, 5.0).rgb, b4 = textureLod(uTex, uv, 6.5).rgb;
+    float lodShift = log2(max(textureSize(uTex, 0).y, 1) / 1080.0);       // same glow size at 1080p and 4K
+    vec3 b1 = textureLod(uTex, uv, 2.0 + lodShift).rgb, b2 = textureLod(uTex, uv, 3.5 + lodShift).rgb,
+         b3 = textureLod(uTex, uv, 5.0 + lodShift).rgb, b4 = textureLod(uTex, uv, 6.5 + lodShift).rgb;
     vec3 bloom = b1 * 0.30 + b2 * 0.30 + b3 * 0.25 + b4 * 0.15;
     bloom = max(bloom - 0.12, 0.0) * 1.6;
     c += bloom * uBloom * (1.0 + 0.8 * drop);

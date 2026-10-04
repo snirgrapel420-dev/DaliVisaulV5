@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -337,8 +339,26 @@ int main(int argc, char** argv)
     commonSrc = readFile(dir + "/common.glsl");
     vertShader = compile(GL_VERTEX_SHADER, readFile(dir + "/fullscreen.vert"), "fullscreen.vert");
 
-    const char* scenes[] = { "scene_09_kali_cathedral", "scene_19_tidal_cathedral", "scene_30_infinite_tunnel",
-        "scene_31_apollonian_dream", "scene_32_gyroid_caverns", "scene_17_image_reactor" };
+    // every scene shader in Shaders/scenes, sorted (the Image Reactor last)
+    static std::vector<std::string> sceneNames;
+    {
+        if (DIR* dp = opendir((dir + "/scenes").c_str()))
+        {
+            while (dirent* e = readdir(dp))
+            {
+                std::string n = e->d_name;
+                if (n.size() > 5 && n.substr(n.size() - 5) == ".frag") sceneNames.push_back(n.substr(0, n.size() - 5));
+            }
+            closedir(dp);
+        }
+        std::sort(sceneNames.begin(), sceneNames.end(), [](const std::string& a, const std::string& b)
+        {
+            const bool ia = a.find("image_reactor") != std::string::npos, ib = b.find("image_reactor") != std::string::npos;
+            return ia != ib ? ib : a < b;
+        });
+    }
+    std::vector<const char*> scenes;
+    for (auto& n : sceneNames) scenes.push_back(n.c_str());
     const char* onlyScene = std::getenv("DALI_ONLY");            // dev mode: render one scene large
     const char* fx[] = { "fx_blur", "fx_glow", "fx_feedback", "fx_kaleidoscope", "fx_mirror", "fx_twist", "fx_warp",
         "fx_noise", "fx_chromatic", "fx_rgbsplit", "fx_displacement", "fx_pixelate", "fx_posterize", "fx_invert",

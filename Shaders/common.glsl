@@ -182,3 +182,8 @@ vec3 familyWeights(float v)
     float wa = clamp(1.0 - v, 0.0, 1.0), wc = clamp(v - 1.0, 0.0, 1.0);
     return vec3(wa, 1.0 - wa - wc, wc);
 }
+
+// ---- resolution-true raymarching ---------------------------------------------------------------
+// the surface is reached when the distance is below the footprint of one pixel at depth t:
+// at 4K the march resolves 4x finer detail than at 1080p, automatically
+float hitEps(float t) { return t * 0.75 / uRes.y + 1e-5; }

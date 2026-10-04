@@ -67,12 +67,12 @@ void main()
 
     float t = 0.0, glow = 0.0, hitTrap = 1.0, hitDepth = 0.0;
     bool hit = false;
-    for (int i = 0; i < 96; i++)
+    for (int i = 0; i < 160; i++)
     {
         vec3 p = ro + rd * t;
         float d = de(p);
         glow += exp(-d * 300.0) * 0.008;                    // volumetric edge glow
-        if (d < 0.0008 * t) { hit = true; hitTrap = gTrap; hitDepth = gDepth; break; }
+        if (d < hitEps(t)) { hit = true; hitTrap = gTrap; hitDepth = gDepth; break; }
         t += d * 0.85;
         if (t > 6.0) break;
     }
