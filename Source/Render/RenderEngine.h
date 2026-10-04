@@ -70,6 +70,9 @@ private:
     void drawFullscreen();
     static void bindTexture(int unit, unsigned int tex);
     void publishTelemetry(double now);
+    bool isLeader() const noexcept;
+    void pullTimeline();
+    void pushTimeline();
     void updateAutoPilot(float dt);
 
     EngineState& state;
@@ -101,7 +104,8 @@ private:
     double lastTime = 0.0, startTime = 0.0;
     double sceneTime = 0.0, templateMotion = 0.0;
     AudioUniforms au;
-    float activity = 0.0f;                 // smoothed 'music is playing' gate (0 = frozen)
+    float activity = 0.0f;
+    bool leading = true, wasLeading = false;                 // smoothed 'music is playing' gate (0 = frozen)
     std::uint32_t dropCount = 0;
 
     // Auto Pilot: phrase-based variations (deterministic per phrase, so preview and
@@ -130,7 +134,7 @@ private:
     int pScene, pIntensity, pSpeed, pMacro[4], pSensitivity, pSmoothing, pReact[4], pSyncSource, pSyncDiv,
         pInternalBpm, pPalette, pHue, pSat, pBright, pContrast, pColorAmount, pColorShift, pAudioColor,
         pCustomA, pCustomB, pTplEnable, pTplMode, pTplBlend, pTplMix, pTplMirror, pTplKaleido,
-        pTplRotation, pTplMotion, pAudioDrive, pIdleMotion, pDynamics, pAutoPilot, pAutoBars, pAutoOnDrop, pBloom, pImgMode, pAutoFX;
+        pTplRotation, pTplMotion, pAudioDrive, pIdleMotion, pDynamics, pAutoPilot, pAutoBars, pAutoOnDrop, pBloom, pImgMode, pAutoFX, pSharpen;
     std::vector<std::pair<const char*, int>> tplUniforms;   // uniform name → param index
     std::vector<int> pFxOn, pFxAmt, pFxP2;
 

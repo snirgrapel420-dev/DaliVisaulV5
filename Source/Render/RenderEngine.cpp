@@ -11,7 +11,7 @@ inline float smoothTo(float cur, float target, float dt, float tau) noexcept
 {
     return tau <= 1e-4f ? target : cur + (target - cur) * (1.0f - std::exp(-dt / tau));
 }
-constexpr float kFadeSeconds = 0.6f;
+constexpr float kFadeSeconds = 1.2f;   // dimensional portal transition
 }
 
 // =============================================================================
@@ -31,7 +31,7 @@ RenderEngine::RenderEngine(EngineState& s, juce::OpenGLContext& c, Role r)
     pTplEnable = I(id::tplEnable); pTplMode = I(id::tplMode); pTplBlend = I(id::tplBlend); pTplMix = I(id::tplMix);
     pTplMirror = I("tplMirror"); pTplKaleido = I("tplKaleido"); pTplRotation = I("tplRotation"); pTplMotion = I("tplMotion");
     pAudioDrive = I(id::audioDrive); pIdleMotion = I(id::idleMotion); pDynamics = I(id::dynamics);
-    pAutoPilot = I(id::autoPilot); pAutoBars = I(id::autoBars); pAutoOnDrop = I(id::autoOnDrop); pBloom = I(id::bloom); pImgMode = I(id::imgMode); pAutoFX = I(id::autoFX);
+    pAutoPilot = I(id::autoPilot); pAutoBars = I(id::autoBars); pAutoOnDrop = I(id::autoOnDrop); pBloom = I(id::bloom); pImgMode = I(id::imgMode); pAutoFX = I(id::autoFX); pSharpen = I(id::sharpen);
     jassert(juce::String(sceneLibrary()[size_t(kImageSceneIndex)].id) == "image");
     autoTargetIndex[0] = modTargetOf(pMacro[0]); autoTargetIndex[1] = modTargetOf(pMacro[1]);
     autoTargetIndex[2] = modTargetOf(pMacro[2]); autoTargetIndex[3] = modTargetOf(pMacro[3]);
@@ -160,8 +160,34 @@ void RenderEngine::openGLContextClosing()
 // =============================================================================
 //  analysis → smoothed uniforms + musical clock
 // =============================================================================
+bool RenderEngine::isLeader() const noexcept
+{
+    return role == Role::Output || !state.telemetry.outputActive.load();
+}
+
+void RenderEngine::pullTimeline()
+{
+    auto& tl = state.timeline;
+    sceneTime = tl.sceneTime.load(); templateMotion = tl.templateMotion.load();
+    bassTime = tl.bassTime.load(); midTime = tl.midTime.load(); highTime = tl.highTime.load(); levelTime = tl.levelTime.load();
+    randomStep = tl.randomStep.load();
+}
+
+void RenderEngine::pushTimeline()
+{
+    auto& tl = state.timeline;
+    tl.sceneTime = sceneTime; tl.templateMotion = templateMotion;
+    tl.bassTime = bassTime; tl.midTime = midTime; tl.highTime = highTime; tl.levelTime = levelTime;
+    tl.colorDrift = color.getDrift(); tl.randomStep = randomStep;
+}
+
 void RenderEngine::updateAnalysis(double now, float dt)
 {
+    // timeline leadership: a new leader continues the shared timeline instead of starting from zero
+    leading = isLeader();
+    if (leading && !wasLeading) { pullTimeline(); color.setDrift(state.timeline.colorDrift.load()); }
+    wasLeading = leading;
+
     const auto snap = state.analyzer.snapshot();
     // No audio arriving at all (no device, stopped host, nothing playing through the
     // loopback) → treat as silence so the picture comes to rest instead of freezing mid-motion.
@@ -214,10 +240,13 @@ void RenderEngine::updateAnalysis(double now, float dt)
 
     // band times: each clock only runs while its band sounds (Synesthesia-style)
     const double spd = effective(pSpeed);
-    bassTime  = std::fmod(bassTime  + dt * spd * activity * (0.08 + 1.6 * au.bass),   10000.0);
-    midTime   = std::fmod(midTime   + dt * spd * activity * (0.08 + 1.4 * au.mid),    10000.0);
-    highTime  = std::fmod(highTime  + dt * spd * activity * (0.08 + 1.4 * au.high),   10000.0);
-    levelTime = std::fmod(levelTime + dt * spd * activity * (0.08 + 1.5 * au.energy), 10000.0);
+    if (leading)
+    {
+        bassTime  = std::fmod(bassTime  + dt * spd * activity * (0.08 + 1.6 * au.bass),   10000.0);
+        midTime   = std::fmod(midTime   + dt * spd * activity * (0.08 + 1.4 * au.mid),    10000.0);
+        highTime  = std::fmod(highTime  + dt * spd * activity * (0.08 + 1.4 * au.high),   10000.0);
+        levelTime = std::fmod(levelTime + dt * spd * activity * (0.08 + 1.5 * au.energy), 10000.0);
+    }
 
     DetectedTiming det;
     det.bpm = f.bpm; det.confidence = f.bpmConfidence; det.beatPhase = f.beatPhase; det.stamp = snap.stamp;
@@ -226,7 +255,7 @@ void RenderEngine::updateAnalysis(double now, float dt)
     {
         clock.update(now, dt * juce::jmin(1.0f, activity * 1.5f), SyncSource(choice(pSyncSource)), state.host.read(), det,
                      effective(pInternalBpm), choice(pSyncDiv));
-        if (clock.beatHappened()) randomStep = random.nextFloat();
+        if (leading && clock.beatHappened()) randomStep = random.nextFloat();
     }
 
     const auto midiCount = state.midiTriggerCount.load();
@@ -483,14 +512,19 @@ void RenderEngine::renderOpenGL()
     const float drive = effective(pAudioDrive);
     const float musical = (1.0f - drive) + drive * (0.25f + 1.1f * au.energy + 0.35f * au.bass);
     const float rate = juce::jmap(activity, effective(pIdleMotion), musical);
-    sceneTime += dt * speed * rate;
-    templateMotion += dt * effective(pTplMotion) * (0.5 + 0.5 * speed) * rate;
+    if (leading)
+    {
+        sceneTime += dt * speed * rate;
+        templateMotion += dt * effective(pTplMotion) * (0.5 + 0.5 * speed) * rate;
+    }
 
     ColorSystem::Inputs ci;
     ci.palette = choice(pPalette); ci.customHueA = effective(pCustomA); ci.customHueB = effective(pCustomB);
     ci.colorShift = effective(pColorShift); ci.audioColor = effective(pAudioColor); ci.colorAmount = effective(pColorAmount);
     ci.centroid = au.centroid; ci.flux = au.flux; ci.kick = au.kick;
-    color.update(ci, dt);
+    if (!leading) color.setDrift(state.timeline.colorDrift.load());
+    color.update(ci, leading ? dt : 0.0f);
+    if (leading) pushTimeline(); else pullTimeline();
 
     uploadImageIfChanged();
 
@@ -622,6 +656,7 @@ void RenderEngine::renderOpenGL()
         outputShader.set("uDynamics", effective(pDynamics));
         outputShader.set("uBloom", effective(pBloom));
         outputShader.set("uAutoFX", effective(pAutoFX));
+        outputShader.set("uSharpen", effective(pSharpen));
         bindTexture(0, src);
         drawFullscreen();
     };

@@ -43,13 +43,28 @@ private:
     HostTiming timing;
 };
 
+// One timeline for every render engine (preview + fullscreen output): the leading engine (the
+// output while it is live, otherwise the preview) integrates the music-driven clocks, the other
+// follows — so both windows show the same picture.
+struct SharedTimeline
+{
+    std::atomic<double> sceneTime { 0 }, templateMotion { 0 };
+    std::atomic<double> bassTime { 0 }, midTime { 0 }, highTime { 0 }, levelTime { 0 };
+    std::atomic<float>  colorDrift { 0 }, randomStep { 0 };
+};
+
 struct OutputSettings
 {
     std::atomic<int>   renderScaleIndex { 2 };      // 0 = 50 %, 1 = 75 %, 2 = 100 %
     std::atomic<bool>  vsync { true };
     std::atomic<bool>  previewWhileOutput { true };
     std::atomic<int>   displayIndex { -1 };         // -1 = last (usually external) display
-    static float scaleFor(int idx) noexcept { return idx <= 0 ? 0.5f : (idx == 1 ? 0.75f : 1.0f); }
+    // 50 / 75 / 100 % render; 150 / 200 % = supersampling (rendered larger, filtered down: no shimmer)
+    static float scaleFor(int idx) noexcept
+    {
+        static const float s[] = { 0.5f, 0.75f, 1.0f, 1.5f, 2.0f };
+        return s[idx < 0 ? 0 : (idx > 4 ? 4 : idx)];
+    }
 };
 
 struct Telemetry
@@ -90,6 +105,7 @@ struct EngineState
     std::vector<juce::RangedAudioParameter*> paramPtrs;   // index = params::all() order
     HostTimingShared host;
     OutputSettings   output;
+    SharedTimeline   timeline;
     Telemetry        telemetry;
 
     // MIDI trigger source (written by MidiMapper on the message thread)

@@ -16,16 +16,16 @@ struct SceneInfo
     const char* description;
 };
 
-inline const std::array<SceneInfo, 6>& sceneLibrary();
+inline const std::array<SceneInfo, 20>& sceneLibrary();
 
 /** Index of the Image Reactor scene (the scene that renders the loaded image itself). */
-constexpr int kImageSceneIndex = 5;
+constexpr int kImageSceneIndex = 19;
 
 // The scenes are self-driving: every moving part is automated from the music inside the scene
 // (camera, geometry, light, colour evolution with the musical state). The macros only set character.
-inline const std::array<SceneInfo, 6>& sceneLibrary()
+inline const std::array<SceneInfo, 20>& sceneLibrary()
 {
-    static const std::array<SceneInfo, 6> s { {
+    static const std::array<SceneInfo, 20> s { {
         { "kali",     "01  KALI CATHEDRAL",    "scene_09_kali_cathedral_frag",    { "Fold Twist", "Complexity", "Flight Speed", "Glow" },
           "Flight through a raymarched fractal cathedral. Bass flies you forward, kicks ignite the walls, snares twist the folds, the light and colour evolve with the music." },
         { "tidal",    "02  TIDAL CATHEDRAL",   "scene_19_tidal_cathedral_frag",   { "Architecture", "Caustics", "Drift Speed", "Colour Family" },
@@ -36,7 +36,35 @@ inline const std::array<SceneInfo, 6>& sceneLibrary()
           "Flight through an infinite 3D Apollonian fractal of spheres within spheres. The kick makes the whole structure breathe." },
         { "gyroid",   "05  GYROID CAVERNS",    "scene_32_gyroid_caverns_frag",    { "Cave Scale", "Veins", "Flow Speed", "Colour Family" },
           "Gliding through smooth organic caverns lit by bioluminescent veins. Bass swells the walls, the kick pulses the veins." },
-        { "image",    "06  IMAGE REACTOR",     "scene_17_image_reactor_frag",     { "Motion", "Reactivity", "Zoom", "Trails" },
+        { "bulb",     "06  MANDELBULB BLOOM",  "scene_33_mandelbulb_bloom_frag",  { "Power", "Glow", "Orbit Speed", "Colour Family" },
+          "The 3D Mandelbrot floating in space. The kick makes the whole form blossom, the mids slowly re-grow it, chaos makes it writhe." },
+        { "fourd",    "07  FOURTH DIMENSION",  "scene_34_fourth_dimension_frag",  { "Lattice", "Iridescence", "Travel Speed", "Colour Family" },
+          "Flying through a 3D slice of a 4D lattice that moves through the fourth dimension: struts merge and split, chambers open and close. The kick jumps to the next slice." },
+        { "mbox",     "08  MANDELBOX TEMPLE",  "scene_35_mandelbox_temple_frag",  { "Scale", "Edge Glow", "Orbit Speed", "Colour Family" },
+          "A box-folding fractal whose negative scale opens vast carved halls. The kick makes the whole temple breathe, the snare snaps an extra fold." },
+        { "crystal",  "09  CRYSTAL SANCTUM",   "scene_36_crystal_sanctum_frag",   { "Crystals", "Inner Light", "Orbit Speed", "Colour Family" },
+          "A cathedral of giant crystals. The kick sends a ring of light through them, the build makes them grow, the peak lights them from within." },
+        { "menger",   "10  MENGER VOID",       "scene_37_menger_void_frag",       { "Levels", "Edge Light", "Flight Speed", "Colour Family" },
+          "An endless corridor through a Menger sponge: square holes within square holes. The kick sends a pulse of light down the corridor." },
+        { "julia4d",  "11  QUATERNION JULIA",  "scene_38_quaternion_julia_frag",  { "Morph Range", "Glow", "Orbit Speed", "Colour Family" },
+          "A Julia set in four dimensions, seen as a 3D slice. The music moves its 4D constant: the form is reborn continuously, the kick snaps it to a new shape." },
+        { "ocean",    "12  FRACTAL OCEAN",     "scene_39_fractal_ocean_frag",     { "Wave Height", "Foam Glow", "Glide Speed", "Colour Family" },
+          "Gliding over a night sea of fractal waves under the moon. The bass is the swell, the kick sends a ring wave, chaos is a storm." },
+        { "gate",     "13  DIMENSION GATE",    "scene_40_dimension_gate_frag",    { "Density", "Gate Glow", "Flight Speed", "Colour Family" },
+          "Flying through portal gates; behind each gate another dimension (crystal shards, sphere lattice, twisted columns). The kick flares the next gate." },
+        { "city",     "14  ALIEN MEGASTRUCTURE", "scene_41_alien_megastructure_frag", { "Tower Height", "Window Light", "Flight Speed", "Colour Family" },
+          "Flying through a city of colossal alien monoliths. The kick sends a wave of light through the windows; the build lifts the camera over the city." },
+        { "kifs",     "15  KIFS RELIQUARY",    "scene_42_kifs_spire_frag",        { "Fold Complexity", "Glow", "Orbit Speed", "Colour Family" },
+          "A kaleidoscopic IFS sculpture that keeps refolding itself with the mids; the kick jolts the folds into a new arrangement." },
+        { "hive",     "16  BIOMECH HIVE",      "scene_43_biomech_hive_frag",      { "Cell Size", "Honey Glow", "Flight Speed", "Colour Family" },
+          "Flying inside a hexagonal biomechanical hive. The kick sends a pulse along the ribs; the peak lights the honey cores in every cell." },
+        { "nebula",   "17  NEBULA DRIFT",      "scene_44_nebula_drift_frag",      { "Density", "Emission", "Drift Speed", "Colour Family" },
+          "Volumetric flight through the glowing clouds of a stellar nursery. The kick is lightning inside the clouds; the build parts them to reveal a blazing core." },
+        { "shrine",   "18  SIERPINSKI SHRINE", "scene_45_sierpinski_shrine_frag", { "Levels", "Inner Light", "Orbit Speed", "Colour Family" },
+          "A Sierpinski tetrahedron, a pyramid of pyramids. The kick twists its folds, the peak lights every gap from within." },
+        { "nexus",    "19  TORUS NEXUS",       "scene_46_torus_nexus_frag",       { "Rings", "Groove Light", "Spin Speed", "Colour Family" },
+          "A dimension machine: nested rings turning around a living core. The build aligns the rings into a portal; the kick makes them expand." },
+        { "image",    "20  IMAGE REACTOR",     "scene_17_image_reactor_frag",     { "Motion", "Reactivity", "Zoom", "Trails" },
           "Your own image becomes the visual: its structure, colours and contours drive generative modes (Flow Lines, Flow Paint, Pulse, ...), moved by the sound itself." },
     } };
     return s;

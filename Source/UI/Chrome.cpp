@@ -262,6 +262,8 @@ SettingsPanel::SettingsPanel(DaliVisualProcessor& p) : proc(p), display(p), sour
     resolution.addItem("50 %  (fastest)", 1);
     resolution.addItem("75 %", 2);
     resolution.addItem("100 %  (native)", 3);
+    resolution.addItem("150 %  (supersampled - high quality)", 4);
+    resolution.addItem("200 %  (supersampled - ultra, 4K-grade)", 5);
     resolution.onChange = [this] { proc.engineState.output.renderScaleIndex = resolution.getSelectedId() - 1; };
     vsync.onClick = [this] { proc.engineState.output.vsync = vsync.getToggleState(); };
     previewWhileOutput.onClick = [this] { proc.engineState.output.previewWhileOutput = previewWhileOutput.getToggleState(); };

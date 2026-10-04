@@ -42,6 +42,7 @@ std::vector<Def> build()
     F(id::dynamics, "Musical Dynamics", 0.0f, 1.0f, 0.6f, true, "Scene");
     F(id::bloom, "Bloom", 0.0f, 1.0f, 0.45f, true, "Color");
     F(id::autoFX, "Auto FX", 0.0f, 1.0f, 1.0f, true, "Scene");
+    F(id::sharpen, "Sharpness", 0.0f, 1.0f, 0.35f, false, "Color");
     C(id::autoPilot, "Auto Pilot", { "Off", "Variations", "Variations + Scenes" }, 0, "Scene");
     C(id::autoBars, "Auto Pilot Every", { "2 bars", "4 bars", "8 bars", "16 bars", "32 bars" }, 2, "Scene");
     B(id::autoOnDrop, "Auto Pilot On Drop", true, "Scene");

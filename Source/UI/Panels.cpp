@@ -537,18 +537,19 @@ ColorPanel::ColorPanel(DaliVisualProcessor& p)
       brightness(p, params::id::brightness, "Brightness"), contrast(p, params::id::contrast, "Contrast"),
       colorAmount(p, params::id::colorAmount, "Color Amount"), colorShift(p, params::id::colorShift, "Color Shift"),
       audioColor(p, params::id::audioColor, "Audio Color"), bloom(p, params::id::bloom, "Bloom"),
+      sharpen(p, params::id::sharpen, "Sharpness"),
       customA(p, params::id::customHueA, "Base Hue"),
       customB(p, params::id::customHueB, "Highlight Hue")
 {
     for (juce::Component* c : std::initializer_list<juce::Component*> { &paletteHeader, &gradeHeader, &customHeader, &hue, &saturation, &brightness,
-                     &contrast, &colorAmount, &colorShift, &audioColor, &bloom, &customA, &customB })
+                     &contrast, &colorAmount, &colorShift, &audioColor, &bloom, &sharpen, &customA, &customB })
         addAndMakeVisible(c);
     for (int i = 0; i < int(PaletteId::count); ++i) addAndMakeVisible(swatches.add(new Swatch(p, i)));
 }
 
 ColorPanel::~ColorPanel() = default;
 
-int ColorPanel::preferredHeight(int) { return kPad * 4 + kHeaderH * 3 + 3 * 46 + kKnobH * 2 + kKnobH; }
+int ColorPanel::preferredHeight(int) { return kPad * 4 + kHeaderH * 3 + 3 * 46 + kKnobH * 3 + kKnobH; }
 
 void ColorPanel::resized()
 {
@@ -560,8 +561,8 @@ void ColorPanel::resized()
         swatches[i]->setBounds(grid.getX() + (i % 3) * sw, grid.getY() + (i / 3) * 46, sw, 46);
     r.removeFromTop(kPad);
     gradeHeader.setBounds(r.removeFromTop(kHeaderH));
-    layoutKnobGrid({ &hue, &saturation, &brightness, &contrast, &colorAmount, &colorShift, &audioColor, &bloom },
-                   r.removeFromTop(kKnobH * 2), 4, kKnobH);
+    layoutKnobGrid({ &hue, &saturation, &brightness, &contrast, &colorAmount, &colorShift, &audioColor, &bloom, &sharpen },
+                   r.removeFromTop(kKnobH * 3), 4, kKnobH);
     r.removeFromTop(kPad);
     customHeader.setBounds(r.removeFromTop(kHeaderH));
     layoutKnobGrid({ &customA, &customB }, r.removeFromTop(kKnobH), 4, kKnobH);

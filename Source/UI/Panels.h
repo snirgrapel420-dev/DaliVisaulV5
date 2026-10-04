@@ -125,7 +125,7 @@ private:
     DaliVisualProcessor& proc;
     SectionLabel paletteHeader { "Palette" }, gradeHeader { "Colour" }, customHeader { "Custom Palette" };
     juce::OwnedArray<Swatch> swatches;
-    ParamKnob hue, saturation, brightness, contrast, colorAmount, colorShift, audioColor, bloom, customA, customB;
+    ParamKnob hue, saturation, brightness, contrast, colorAmount, colorShift, audioColor, bloom, sharpen, customA, customB;
 };
 
 // ---------------------------------------------------------------------------------------------

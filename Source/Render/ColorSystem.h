@@ -31,6 +31,9 @@ public:
         amount = in.colorAmount;
     }
 
+    float getDrift() const noexcept { return drift; }
+    void setDrift(float d) noexcept { drift = d; }
+
     void apply(Shader& s) const
     {
         s.set3("uPalA", pal.a); s.set3("uPalB", pal.b); s.set3("uPalC", pal.c); s.set3("uPalD", pal.d);
